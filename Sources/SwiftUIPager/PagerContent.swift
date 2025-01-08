@@ -14,7 +14,6 @@ import SwiftUI
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 extension Pager {
     struct PagerContent: View {
-
         /// `Direction` determines the direction of the swipe gesture
         enum Direction {
             /// Swiping  from left to right
@@ -80,6 +79,9 @@ extension Pager {
         /// Swiping back is disabled
         var dragForwardOnly: Bool = false
 
+        /// Swiping forward is disabled
+        var dragBackwardOnly: Bool = false
+
         /// `true` if the pager is horizontal
         var isHorizontal: Bool = true
 
@@ -87,7 +89,7 @@ extension Pager {
         var interactiveScale: CGFloat = 1
 
         /// Opacity increment applied to unfocused pages
-        var opacityIncrement: Double? 
+        var opacityIncrement: Double?
 
         /// `true` if  `Pager` can be dragged
         var allowsDragging: Bool = true
@@ -133,7 +135,7 @@ extension Pager {
 
         /// Callback invoked when a new page is set
         var onPageChanged: ((Int) -> Void)?
-		
+
         /// Callback for a dragging began event
         var onDraggingBegan: (() -> Void)?
 
@@ -180,7 +182,7 @@ extension Pager {
 
         var body: some View {
             let stack = HStack(spacing: interactiveItemSpacing) {
-                ForEach(dataDisplayed, id: id) { item in
+                ForEach(dataDisplayed, id: self.id) { item in
                     Group {
                         if self.isInifinitePager && self.isEdgePage(item) {
                             EmptyView()
@@ -191,34 +193,34 @@ extension Pager {
                                 .rotation3DEffect((self.isHorizontal ? .zero : Angle(degrees: -90)) - self.scrollDirectionAngle,
                                                   axis: (0, 0, 1))
                                 .rotation3DEffect(self.angle(for: item),
-                                                  axis:  self.axis)
+                                                  axis: self.axis)
                                 .opacity(opacity(for: item))
                         }
                     }
                 }
-                .offset(x: self.xOffset, y : self.yOffset)
+                .offset(x: self.xOffset, y: self.yOffset)
             }
-            .frame(size: size)
+            .frame(size: self.size)
 
             #if !os(tvOS)
-            var wrappedView: AnyView = swipeInteractionArea == .page ? AnyView(stack) : AnyView(stack.contentShape(Rectangle()))
-            wrappedView = AnyView(wrappedView.gesture(allowsDragging ? swipeGesture : nil, priority: gesturePriority))
+            var wrappedView: AnyView = self.swipeInteractionArea == .page ? AnyView(stack) : AnyView(stack.contentShape(Rectangle()))
+            wrappedView = AnyView(wrappedView.gesture(self.allowsDragging ? swipeGesture : nil, priority: self.gesturePriority))
             #else
             let wrappedView = stack
-              .focusable()
-              .onMoveCommand(perform: self.onMoveCommandSent)
+                .focusable()
+                .onMoveCommand(perform: self.onMoveCommandSent)
             #endif
-          
+
             #if os(macOS)
             wrappedView = wrappedView
-              .focusable()
-              .onMoveCommand(perform: self.onMoveCommandSent)
-              .eraseToAny()
+                .focusable()
+                .onMoveCommand(perform: self.onMoveCommandSent)
+                .eraseToAny()
             #endif
 
             var resultView = wrappedView
                 .rotation3DEffect(
-                    (isHorizontal ? .zero : Angle(degrees: 90)) + scrollDirectionAngle,
+                    (self.isHorizontal ? .zero : Angle(degrees: 90)) + self.scrollDirectionAngle,
                     axis: (0, 0, 1)
                 ).eraseToAny()
 
@@ -248,7 +250,7 @@ extension Pager {
             #endif
 
             #if os(watchOS)
-            if #available(watchOS 7.0, *), allowsDigitalCrownRotation {
+            if #available(watchOS 7.0, *), self.allowsDigitalCrownRotation {
                 resultView = resultView
                     .focusable()
                     .digitalCrownRotation(
@@ -289,17 +291,18 @@ extension Pager {
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 extension Pager.PagerContent {
-  
     #if os(tvOS) || os(macOS)
     func onMoveCommandSent(_ command: MoveCommandDirection) {
-      let animation = self.draggingAnimation.animation ?? .default
+        let animation = self.draggingAnimation.animation ?? .default
         switch (command, isHorizontal) {
         case (.left, true):
             guard !dragForwardOnly else { return }
             withAnimation(animation) { self.pagerModel.update(.previous) }
         case (.right, true):
+            guard !dragBackwardOnly else { return }
             withAnimation(animation) { self.pagerModel.update(.next) }
         case (.up, false):
+            guard !dragBackwardOnly else { return }
             guard !dragForwardOnly else { return }
             withAnimation(animation) { self.pagerModel.update(.previous) }
         case (.down, false):
@@ -319,11 +322,11 @@ extension Pager.PagerContent {
             .updating($isGestureFinished) { _, state, _ in
                 state = false
             }
-            .onChanged({ value in
-                if !dragForwardOnly || dragTranslation(for: value).width < 0 {
+            .onChanged { value in
+                if (!dragForwardOnly && self.dragTranslation(for: value).width > 0) || (!dragBackwardOnly && self.dragTranslation(for: value).width < 0) {
                     self.onDragChanged(with: value)
                 }
-            })
+            }
     }
 
     func onDragChanged(with value: DragGesture.Value) {
@@ -333,9 +336,9 @@ extension Pager.PagerContent {
                 onDraggingBegan?()
             }
 
-            let currentLocation = dragLocation(for: value)
-            let currentTranslation = dragTranslation(for: value)
-            let lastLocation = self.lastDraggingValue.flatMap(dragLocation) ?? currentLocation
+            let currentLocation = self.dragLocation(for: value)
+            let currentTranslation = self.dragTranslation(for: value)
+            let lastLocation = self.lastDraggingValue.flatMap(self.dragLocation) ?? currentLocation
             let swipeAngle = (currentLocation - lastLocation).angle ?? .zero
             // Ignore swipes that aren't on the X-Axis
             guard swipeAngle.isAlongXAxis else {
@@ -379,7 +382,7 @@ extension Pager.PagerContent {
 
         var defaultPagingAnimation: PagingAnimation = .standard
         var speed: Double = 1
-        if allowsMultiplePagination && pageIncrement > 1 {
+        if allowsMultiplePagination, pageIncrement > 1 {
             defaultPagingAnimation = .steep
             speed = 1 / min(4, Double(pageIncrement))
         }
@@ -486,5 +489,4 @@ extension Pager.PagerContent {
         }
     }
     #endif
-
 }

@@ -32,8 +32,7 @@ import SwiftUI
 /// - 0.6 shrink ratio for items that aren't focused.
 ///
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-public struct Pager<Element, ID, PageView>: View  where PageView: View, Element: Equatable, ID: Hashable {
-
+public struct Pager<Element, ID, PageView>: View where PageView: View, Element: Equatable, ID: Hashable {
     /// `Direction` determines the direction of the swipe gesture
     enum Direction {
         /// Swiping  from left to right
@@ -64,7 +63,7 @@ public struct Pager<Element, ID, PageView>: View  where PageView: View, Element:
     /*** ViewModified properties ***/
 
     /// Whether `Pager` should bounce or not
-    var bounces: Bool = true
+    var bounces = true
 
     /// Max relative item size that `Pager` will scroll before determining whether to move to the next page
     var pageRatio: CGFloat = 1
@@ -97,10 +96,13 @@ public struct Pager<Element, ID, PageView>: View  where PageView: View, Element:
     var alignment: PositionAlignment = .center
 
     /// Swiping back is disabled
-    var dragForwardOnly: Bool = false
+    var dragForwardOnly = false
+
+    /// Swiping forward is disabled
+    var dragBackwardOnly = false
 
     /// `true` if the pager is horizontal
-    var isHorizontal: Bool = true
+    var isHorizontal = true
 
     /// Shrink ratio that affects the items that aren't focused
     var interactiveScale: CGFloat = 1
@@ -109,13 +111,13 @@ public struct Pager<Element, ID, PageView>: View  where PageView: View, Element:
     var opacityIncrement: Double?
 
     /// `true` if  `Pager` can be dragged
-    var allowsDragging: Bool = true
+    var allowsDragging = true
 
     /// `true` if  `Pager`interacts with the digital crown
-    var allowsDigitalCrownRotation: Bool = true
+    var allowsDigitalCrownRotation = true
 
     /// `true` if pages should have a 3D rotation effect
-    var shouldRotate: Bool = false
+    var shouldRotate = false
 
     /// Used to modify `Pager` offset outside this view
     var pageOffset: Double = 0
@@ -127,16 +129,16 @@ public struct Pager<Element, ID, PageView>: View  where PageView: View, Element:
     var itemSpacing: CGFloat = 0
 
     /// Whether the `Pager` loops endlessly
-    var isInifinitePager: Bool = false
+    var isInifinitePager = false
 
     /// Number of times the input data should be repeated in a looping `Pager`
     var loopingCount: UInt = 1
 
     /// Whether `Pager` should page multiple pages at once
-    var allowsMultiplePagination: Bool = false
+    var allowsMultiplePagination = false
 
     /// Wheter `Pager` delays gesture recognition
-    var delaysTouches: Bool = true
+    var delaysTouches = true
 
     /// Priority selected to add `swipeGesture`
     var gesturePriority: GesturePriority = .default
@@ -155,7 +157,7 @@ public struct Pager<Element, ID, PageView>: View  where PageView: View, Element:
 
     /// Callback invoked when a new page is set
     var onPageChanged: ((Int) -> Void)?
-	
+
     /// Callback for a dragging began event
     var onDraggingBegan: (() -> Void)?
 
@@ -171,7 +173,7 @@ public struct Pager<Element, ID, PageView>: View  where PageView: View, Element:
     /*** State and Binding properties ***/
 
     let pagerModel: Page
-    
+
     /// Initializes a new `Pager`.
     ///
     /// - Parameter page: Current page index
@@ -183,7 +185,7 @@ public struct Pager<Element, ID, PageView>: View  where PageView: View, Element:
         self.data = Array(data)
         self.id = id
         self.content = content
-        self.pagerModel.totalPages = data.count
+        pagerModel.totalPages = data.count
     }
 
     public var body: some View {
@@ -200,45 +202,45 @@ public struct Pager<Element, ID, PageView>: View  where PageView: View, Element:
                          data: data,
                          id: id,
                          content: content)
-                .contentLoadingPolicy(contentLoadingPolicy)
-                .loopPages(isInifinitePager, repeating: loopingCount)
-                .alignment(alignment)
-                .interactive(scale: interactiveScale)
-                .interactive(opacity: opacityIncrement)
-                .interactive(rotation: shouldRotate)
-                .pageOffset(pageOffset)
-                .itemSpacing(itemSpacing)
-                .itemAspectRatio(itemAspectRatio, alignment: itemAlignment)
-                .onPageChanged(onPageChanged)
-                .onPageWillTransition(onPageWillTransition)
-                .onPageWillChange(onPageWillChange)
-                .padding(sideInsets)
-                .pagingAnimation(pagingAnimation)
-                .partialPagination(pageRatio)
+            .contentLoadingPolicy(contentLoadingPolicy)
+            .loopPages(isInifinitePager, repeating: loopingCount)
+            .alignment(alignment)
+            .interactive(scale: interactiveScale)
+            .interactive(opacity: opacityIncrement)
+            .interactive(rotation: shouldRotate)
+            .pageOffset(pageOffset)
+            .itemSpacing(itemSpacing)
+            .itemAspectRatio(itemAspectRatio, alignment: itemAlignment)
+            .onPageChanged(onPageChanged)
+            .onPageWillTransition(onPageWillTransition)
+            .onPageWillChange(onPageWillChange)
+            .padding(sideInsets)
+            .pagingAnimation(pagingAnimation)
+            .partialPagination(pageRatio)
 
         #if !os(tvOS)
-          pagerContent = pagerContent
-            .swipeInteractionArea(swipeInteractionArea)
-            .allowsDragging(allowsDragging)
-            .pagingPriority(gesturePriority)
-            .delaysTouches(delaysTouches)
-            .sensitivity(sensitivity)
-            .onDraggingBegan(onDraggingBegan)
-            .onDraggingChanged(onDraggingChanged)
-            .onDraggingEnded(onDraggingEnded)
-            .bounces(bounces)
-            .draggingAnimation(draggingAnimation)
-            .dragForwardOnly(dragForwardOnly)
+            pagerContent = pagerContent
+                .swipeInteractionArea(swipeInteractionArea)
+                .allowsDragging(allowsDragging)
+                .pagingPriority(gesturePriority)
+                .delaysTouches(delaysTouches)
+                .sensitivity(sensitivity)
+                .onDraggingBegan(onDraggingBegan)
+                .onDraggingChanged(onDraggingChanged)
+                .onDraggingEnded(onDraggingEnded)
+                .bounces(bounces)
+                .draggingAnimation(draggingAnimation)
+                .dragForwardOnly(dragForwardOnly)
         #else
-        pagerContent = pagerContent.draggingAnimation(draggingAnimation)
+            pagerContent = pagerContent.draggingAnimation(draggingAnimation)
         #endif
 
         #if os(watchOS)
-        if #available(watchOS 7.0, *) {
-            pagerContent = pagerContent
-                .onDigitalCrownRotated(onDigitalCrownRotated)
-                .allowsDigitalCrownRotation(allowsDigitalCrownRotation)
-        }
+            if #available(watchOS 7.0, *) {
+                pagerContent = pagerContent
+                    .onDigitalCrownRotated(onDigitalCrownRotated)
+                    .allowsDigitalCrownRotation(allowsDigitalCrownRotation)
+            }
         #endif
 
         pagerContent = allowsMultiplePagination ? pagerContent.multiplePagination() : pagerContent
@@ -250,19 +252,16 @@ public struct Pager<Element, ID, PageView>: View  where PageView: View, Element:
 
         return pagerContent
     }
-
 }
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-extension Pager where ID == Element.ID, Element : Identifiable {
-    
+public extension Pager where ID == Element.ID, Element: Identifiable {
     /// Initializes a new Pager.
     ///
     /// - Parameter page: Current page index
     /// - Parameter data: Collection of items to populate the content
     /// - Parameter content: Factory method to build new pages
-    public init<Data: RandomAccessCollection>(page: Page, data: Data, @ViewBuilder content: @escaping (Element) -> PageView) where Data.Index == Int, Data.Element == Element {
+    init<Data: RandomAccessCollection>(page: Page, data: Data, @ViewBuilder content: @escaping (Element) -> PageView) where Data.Index == Int, Data.Element == Element {
         self.init(page: page, data: Array(data), id: \Element.id, content: content)
     }
-
 }

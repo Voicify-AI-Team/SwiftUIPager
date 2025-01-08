@@ -10,7 +10,6 @@ import SwiftUI
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 extension Pager: Buildable {
-
     /// Result of paginating
     public typealias DragResult = (page: Int, newPage: Int, translation: CGFloat, velocity: Double)
 
@@ -76,6 +75,14 @@ extension Pager: Buildable {
     ///     set to true to disable scrolling backwards
     public func dragForwardOnly(_ value: Bool = true) -> Self {
         mutating(keyPath: \.dragForwardOnly, value: value)
+    }
+
+    /// User can only swipe backward so in one direction
+    ///
+    /// - Parameter enabled: by default dragBackwardOnly is disables so pages can be scrolled in both directions,
+    ///     set to true to disable scrolling fowards
+    public func dragBackwardOnly(_ value: Bool = true) -> Self {
+        mutating(keyPath: \.dragBackwardOnly, value: value)
     }
 
     /// Sets the explicit animation to be used. Defaults to `.standard`
@@ -159,7 +166,7 @@ extension Pager: Buildable {
     public func onDraggingEnded(_ callback: (() -> Void)?) -> Self {
         mutating(keyPath: \.onDraggingEnded, value: callback)
     }
-  
+
     #endif
 
     /// Adds a callback to react when _iWatch Digital Crown_ is rotated
@@ -377,6 +384,4 @@ extension Pager: Buildable {
         guard edges == .all || edges == allowedEdges else { return self }
         return mutating(keyPath: \.sideInsets, value: length ?? 8)
     }
-
 }
-

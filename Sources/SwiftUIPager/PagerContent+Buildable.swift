@@ -9,8 +9,8 @@
 import SwiftUI
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
+@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 extension Pager.PagerContent: Buildable {
-
     /// Sets the animation to be applied when the user stops dragging
     ///
     /// - Parameter value: callback to get an animation based on the result of dragging
@@ -48,7 +48,7 @@ extension Pager.PagerContent: Buildable {
         var newData = data
         if let id = newData.first?.keyPath {
             let count = max(1, count)
-            newData = (1...count).map { it in
+            newData = (1 ... count).map { it in
                 data.map { PageWrapper(batchId: it, keyPath: id, element: $0.element) }
             }.flatMap { $0 }
         }
@@ -78,6 +78,14 @@ extension Pager.PagerContent: Buildable {
     ///     set to true to disable scrolling backwards
     func dragForwardOnly(_ value: Bool = true) -> Self {
         mutating(keyPath: \.dragForwardOnly, value: value)
+    }
+
+    /// User can only swipe backward so in one direction
+    ///
+    /// - Parameter enabled: by default dragBackwardOnly is disables so pages can be scrolled in both directions,
+    ///     set to true to disable scrolling fowards
+    public func dragBackwardOnly(_ value: Bool = true) -> Self {
+        mutating(keyPath: \.dragBackwardOnly, value: value)
     }
 
     /// Sets the explicit animation to be used. Defaults to `.standard`
@@ -152,11 +160,11 @@ extension Pager.PagerContent: Buildable {
 
     /// Adds a callback to react when dragging ends
     ///
-    /// - Parameter callback: block to be called when  dragging ends. 
+    /// - Parameter callback: block to be called when  dragging ends.
     func onDraggingEnded(_ callback: (() -> Void)?) -> Self {
         mutating(keyPath: \.onDraggingEnded, value: callback)
     }
-  
+
     #endif
 
     /// Adds a callback to react when _iWatch Digital Crown_ is rotated
@@ -313,12 +321,11 @@ extension Pager.PagerContent: Buildable {
     func onPageChanged(_ callback: ((Int) -> Void)?) -> Self {
         mutating(keyPath: \.onPageChanged, value: callback)
     }
-	
+
     /// Sets some padding on the non-scroll axis
     ///
     /// - Parameter length: padding
     func padding(_ length: CGFloat) -> Self {
         mutating(keyPath: \.sideInsets, value: length)
     }
-
 }
