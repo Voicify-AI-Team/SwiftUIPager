@@ -231,6 +231,7 @@ public struct Pager<Element, ID, PageView>: View where PageView: View, Element: 
                 .bounces(bounces)
                 .draggingAnimation(draggingAnimation)
                 .dragForwardOnly(dragForwardOnly)
+                .dragBackwardOnly(dragBackwardOnly)
         #else
             pagerContent = pagerContent.draggingAnimation(draggingAnimation)
         #endif
